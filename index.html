@@ -188,17 +188,44 @@
   </div>
 
   <script>
-
-    // Map gambar profile ahli (termasuk ejaan nama dalam Sheet macam Remy/Nisah)
+    
+// 1. Letak avatarMap ani di bahagian atas sekali dalam <script>
 const avatarMap = {
   "Kaka": "Kaka.png",
   "Abg": "Abg.png",
   "Raimi": "Raimi.png",
-  "Remy": "Raimi.png",       // kalau dalam Sheet ditulis Remy
+  "Remy": "Raimi.png",
   "Hanisah": "Hanisah.png",
-  "Nisah": "Hanisah.png",     // kalau dalam Sheet ditulis Nisah
+  "Nisah": "Hanisah.png",
   "Ruzaini": "Ruzaini.png"
 };
+
+// 2. Dalam fungsi render / loop ahli biskita:
+data.forEach(m => {
+  // Ambil gambar dari map, kalau tiada pakai avatar huruf biasa
+  const avatarUrl = avatarMap[m.nama] || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.nama || 'User')}&background=0F766E&color=fff`;
+
+  const memberCardHtml = `
+    <div class="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-gray-100 shadow-xs mb-2">
+      <div class="flex items-center gap-3">
+        
+        <img src="${avatarUrl}" alt="${m.nama}" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-xs">
+        
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm tracking-tight">${m.nama}</h4>
+          <p class="text-[11px] text-gray-400 font-medium">BND ${m.komitmen}</p>
+        </div>
+
+      </div>
+
+      <div>
+        </div>
+    </div>
+  `;
+
+  // Masukkan ke container HTML
+  container.insertAdjacentHTML('beforeend', memberCardHtml);
+});
     
     // ==========================================
     // ⚠️ MASUKKAN URL WEB APP GOOGLE APPS SCRIPT BISKITA DI SINI
