@@ -131,19 +131,19 @@
         <span class="text-[10px] text-[#0F766E] font-bold opacity-70 group-hover:opacity-100 transition-opacity"><i class="fa-regular fa-copy"></i> Copy</span>
       </section>
 
-      <section id="admin-expense-section" class="hidden bg-[#1E293B] text-white rounded-[2rem] p-6 border border-slate-800 space-y-4 shadow-xl transition-all duration-300">
-        <div class="flex items-center gap-2 text-amber-400">
-          <i class="fa-solid fa-wallet text-xs"></i>
-          <h4 class="text-[11px] font-bold tracking-widest uppercase font-display">Pengeluaran Duit Simpanan</h4>
-        </div>
-        <div class="space-y-2">
-          <input type="text" id="expense-item" placeholder="Perkara (Contoh: Beli Kek Birthday)" class="w-full bg-[#0F172A] text-xs px-4 py-2.5 rounded-xl text-slate-200 outline-none border border-slate-800 placeholder-slate-500 focus:border-amber-500/50 transition-colors">
-          <div class="flex gap-2">
-            <input type="number" id="expense-amount" placeholder="Jumlah (BND)" class="w-full bg-[#0F172A] text-xs px-4 py-2.5 rounded-xl text-slate-200 outline-none border border-slate-800 placeholder-slate-500 focus:border-amber-500/50 transition-colors">
-            <button onclick="submitExpense()" class="bg-amber-500 hover:bg-amber-600 text-[#0F172A] font-bold px-4 py-2.5 rounded-xl text-xs shrink-0 transition-colors tracking-wide font-display">Rekod</button>
-          </div>
-        </div>
-      </section>
+<section id="admin-expense-section" class="hidden bg-white rounded-[2rem] p-6 border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 transition-all duration-300">
+  <div class="flex items-center gap-2 text-[#0F766E]">
+    <i class="fa-solid fa-wallet text-xs"></i>
+    <h4 class="text-[10px] font-bold tracking-widest uppercase font-display">Pengeluaran Duit Simpanan</h4>
+  </div>
+  <div class="space-y-2">
+    <input type="text" id="expense-item" placeholder="Perkara (Contoh: Beli Kek Birthday)" class="w-full bg-gray-50 text-xs px-4 py-2.5 rounded-xl text-gray-800 outline-none border border-gray-100 placeholder-gray-400 focus:border-[#0F766E] transition-colors">
+    <div class="flex gap-2">
+      <input type="number" id="expense-amount" placeholder="Jumlah (BND)" class="w-full bg-gray-50 text-xs px-4 py-2.5 rounded-xl text-gray-800 outline-none border border-gray-100 placeholder-gray-400 focus:border-[#0F766E] transition-colors">
+      <button onclick="submitExpense()" class="bg-[#0F766E] hover:bg-[#115E59] text-white font-bold px-4 py-2.5 rounded-xl text-xs shrink-0 transition-colors tracking-wide font-display cursor-pointer">Rekod</button>
+    </div>
+  </div>
+</section>
 
       <section class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider">
         <button class="text-gray-400 uppercase shrink-0">Jul</button>
