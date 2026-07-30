@@ -90,12 +90,13 @@
 
       <section id="bendahari-disbursement-section" class="hidden bg-white rounded-[2rem] p-6 border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4">
         <div class="flex items-center justify-between">
-          <h4 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Status Agihan Bil Bulan Ini</h4>
-          <span id="fund-ready-badge" class="text-[9px] font-bold bg-gray-100 text-gray-400 px-2.5 py-1 rounded-md uppercase tracking-wider">Dana Belum Cukup</span>
+          <h4 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Pengurusan Bayaran Bil Bulan Ini</h4>
+          <span id="fund-ready-badge" class="text-[9px] font-bold bg-gray-100 text-gray-400 px-2.5 py-1 rounded-md uppercase tracking-wider">Akses Bendahari</span>
         </div>
         
         <div class="space-y-4">
-          <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+          
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
                 <span class="text-base">⚡</span>
@@ -104,7 +105,7 @@
                   <p class="text-[10px] text-gray-400 font-medium">Anggaran: BND 200.00</p>
                 </div>
               </div>
-              <button id="btn-pay-karan" onclick="payBill('⚡ Bil Karan Babah', 'karan')" disabled class="px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-gray-100 text-gray-300 cursor-not-allowed">Kunci 🔒</button>
+              <span id="status-tag-karan" class="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 uppercase">Belum Dibayar</span>
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200/60">
@@ -121,9 +122,14 @@
                 </label>
               </div>
             </div>
+
+            <button id="btn-pay-karan" onclick="payBill('⚡ Bil Karan Babah', 'karan')" 
+                    class="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-2 px-3 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-display">
+              <i class="fa-solid fa-paper-plane text-[10px]"></i> Sahkan & Bayar Bil Karan ⚡
+            </button>
           </div>
 
-          <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
                 <span class="text-base">📶</span>
@@ -132,7 +138,7 @@
                   <p class="text-[10px] text-gray-400 font-medium">Anggaran: BND 80.00</p>
                 </div>
               </div>
-              <button id="btn-pay-wifi" onclick="payBill('📶 Bil Wifi Mama', 'wifi')" disabled class="px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-gray-100 text-gray-300 cursor-not-allowed">Kunci 🔒</button>
+              <span id="status-tag-wifi" class="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 uppercase">Belum Dibayar</span>
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200/60">
@@ -149,7 +155,13 @@
                 </label>
               </div>
             </div>
+
+            <button id="btn-pay-wifi" onclick="payBill('📶 Bil Wifi Mama', 'wifi')" 
+                    class="w-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-2 px-3 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-display">
+              <i class="fa-solid fa-paper-plane text-[10px]"></i> Sahkan & Bayar Bil WiFi 📶
+            </button>
           </div>
+
         </div>
       </section>
 
@@ -287,7 +299,6 @@
         let percentage = (totalBulanIni / maxTotal) * 100;
         document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
         
-        checkDisbursementLock(totalBulanIni);
         renderMembers();
         renderHistory();
         renderBillButtons();
@@ -297,52 +308,46 @@
       showLoading(false);
     }
 
-    function checkDisbursementLock(totalCollected) {
-      const badge = document.getElementById('fund-ready-badge');
-      const btnKaran = document.getElementById('btn-pay-karan');
-      const btnWifi = document.getElementById('btn-pay-wifi');
-      
-      if (totalCollected >= maxTotal) {
-        badge.innerText = "Dana Cukup ✨";
-        badge.className = "text-[9px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-md uppercase tracking-wider animate-bounce";
-        
-        if (!billStatus.karan) {
-          btnKaran.disabled = false;
-          btnKaran.className = "px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-[#0F172A] text-white hover:bg-slate-800 cursor-pointer font-display";
-          btnKaran.innerText = "Bayar Bil 💸";
-        }
-        if (!billStatus.wifi) {
-          btnWifi.disabled = false;
-          btnWifi.className = "px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-[#0F172A] text-white hover:bg-slate-800 cursor-pointer font-display";
-          btnWifi.innerText = "Bayar Bil 💸";
-        }
-      } else {
-        badge.innerText = "Dana Belum Cukup";
-        badge.className = "text-[9px] font-bold bg-gray-100 text-gray-400 px-2.5 py-1 rounded-md uppercase tracking-wider";
-        
-        btnKaran.disabled = true;
-        btnKaran.className = "px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-gray-100 text-gray-300 cursor-not-allowed";
-        btnKaran.innerText = "Kunci 🔒";
-        
-        btnWifi.disabled = true;
-        btnWifi.className = "px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-gray-100 text-gray-300 cursor-not-allowed";
-        btnWifi.innerText = "Kunci 🔒";
-      }
-    }
-
     function renderBillButtons() {
       const btnKaran = document.getElementById('btn-pay-karan');
       const btnWifi = document.getElementById('btn-pay-wifi');
+      const tagKaran = document.getElementById('status-tag-karan');
+      const tagWifi = document.getElementById('status-tag-wifi');
       
       if (billStatus.karan) {
         btnKaran.disabled = true;
-        btnKaran.className = "px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-emerald-50 text-emerald-600 border border-emerald-100 cursor-default";
-        btnKaran.innerText = "Selesai ✅";
+        btnKaran.className = "w-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold py-2 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1 cursor-default font-display";
+        btnKaran.innerHTML = "✓ Bil Karan Selesai Dibayar";
+        if (tagKaran) {
+          tagKaran.innerText = "SELESAI";
+          tagKaran.className = "text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 uppercase";
+        }
+      } else {
+        btnKaran.disabled = false;
+        btnKaran.className = "w-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-2 px-3 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-display";
+        btnKaran.innerHTML = '<i class="fa-solid fa-paper-plane text-[10px]"></i> Sahkan & Bayar Bil Karan ⚡';
+        if (tagKaran) {
+          tagKaran.innerText = "BELUM DIBAYAR";
+          tagKaran.className = "text-[9px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 uppercase";
+        }
       }
+
       if (billStatus.wifi) {
         btnWifi.disabled = true;
-        btnWifi.className = "px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all bg-emerald-50 text-emerald-600 border border-emerald-100 cursor-default";
-        btnWifi.innerText = "Selesai ✅";
+        btnWifi.className = "w-full bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold py-2 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1 cursor-default font-display";
+        btnWifi.innerHTML = "✓ Bil WiFi Selesai Dibayar";
+        if (tagWifi) {
+          tagWifi.innerText = "SELESAI";
+          tagWifi.className = "text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 uppercase";
+        }
+      } else {
+        btnWifi.disabled = false;
+        btnWifi.className = "w-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-2 px-3 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-display";
+        btnWifi.innerHTML = '<i class="fa-solid fa-paper-plane text-[10px]"></i> Sahkan & Bayar Bil WiFi 📶';
+        if (tagWifi) {
+          tagWifi.innerText = "BELUM DIBAYAR";
+          tagWifi.className = "text-[9px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 uppercase";
+        }
       }
     }
 
