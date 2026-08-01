@@ -194,7 +194,7 @@
 
       <section class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider">
         <button id="month-btn-jul" onclick="selectMonthTab('Jul')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Jul</button>
-        <button id="month-btn-semasa" onclick="selectMonthTab('Semasa')" class="month-tab text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 cursor-pointer">Semasa</button>
+        <button id="month-btn-semasa" onclick="selectMonthTab('Semasa')" class="month-tab text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 cursor-pointer font-bold">Semasa</button>
         <button id="month-btn-aug" onclick="selectMonthTab('Aug')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Aug</button>
         <button id="month-btn-sep" onclick="selectMonthTab('Sep')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Sep</button>
         <button id="month-btn-oct" onclick="selectMonthTab('Oct')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Oct</button>
@@ -249,6 +249,16 @@
       "ruzaini": "Ruzaini.png"
     };
 
+    const monthNameMap = {
+      'Jul': 'Jul',
+      'Aug': 'Aug',
+      'Sep': 'Sep',
+      'Oct': 'Oct',
+      'Nov': 'Nov',
+      'Dec': 'Dec',
+      'Semasa': ''
+    };
+
     const maxTotal = 330;
     let currentRole = 'user';
     let localData = [];
@@ -266,31 +276,22 @@
       return true;
     }
 
-    async function loadDataFromSheets() {
+    async function loadDataFromSheets(targetMonth = '') {
       if (!checkUrlValid()) return;
-      showLoading(true);
+      showLoading(true, "Memuatkan Data " + (targetMonth || "Semasa"));
       try {
-        const response = await fetch(WEB_APP_URL);
+        let fetchUrl = WEB_APP_URL;
+        if (targetMonth) {
+          fetchUrl += "?month=" + encodeURIComponent(targetMonth);
+        }
+
+        const response = await fetch(fetchUrl);
         const jsonResult = await response.json();
         
-        const rawMembers = jsonResult.members || [];
-        const uniqueMap = {};
-        
-        rawMembers.forEach(m => {
-          const key = m.name.trim().toLowerCase();
-          if (!uniqueMap[key]) {
-            uniqueMap[key] = m;
-          } else {
-            if (m.status === 'PAID' || (m.status === 'APPROVAL' && uniqueMap[key].status !== 'PAID')) {
-              uniqueMap[key] = m;
-            }
-          }
-        });
-
-        localData = Object.values(uniqueMap);
+        localData = jsonResult.members || [];
         historyData = jsonResult.rekodPerbelanjaan || [];
         billStatus = jsonResult.statusBilBulanIni || { karan: false, wifi: false };
-        labelNamaBulan = jsonResult.namaBulanSemasa || "";
+        labelNamaBulan = jsonResult.namaBulanSemasa || targetMonth || "";
         
         document.getElementById('label-bulan').innerText = labelNamaBulan;
         
@@ -310,21 +311,21 @@
       showLoading(false);
     }
 
-    function selectMonthTab(monthName) {
-      selectedMonthTab = monthName;
+    async function selectMonthTab(monthKey) {
+      selectedMonthTab = monthKey;
       
-      // Kemaskini Gaya Visual Tab (Active Styling)
       const tabs = document.querySelectorAll('.month-tab');
       tabs.forEach(tab => {
         tab.className = "month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer";
       });
 
-      const activeBtn = document.getElementById('month-btn-' + monthName.toLowerCase());
+      const activeBtn = document.getElementById('month-btn-' + monthKey.toLowerCase());
       if (activeBtn) {
         activeBtn.className = "month-tab text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 cursor-pointer font-bold";
       }
 
-      renderHistory();
+      const targetMonthParam = monthNameMap[monthKey] || '';
+      await loadDataFromSheets(targetMonthParam);
     }
 
     function renderBillButtons() {
@@ -544,23 +545,13 @@
       const container = document.getElementById('expense-history-list');
       let displayedData = historyData;
 
-      // 1. Penapis mengikut tab bulan (Jul, Semasa, Sep, Oct, Nov, Dec)
-      if (selectedMonthTab !== 'Semasa') {
-        const query = selectedMonthTab.toLowerCase();
-        displayedData = historyData.filter(item => {
-          const itemText = ((item.item || "") + " " + (item.date || "")).toLowerCase();
-          return itemText.includes(query);
-        });
-      }
-
-      // 2. Penapis sub-button (Bulan Ini)
       if (currentFilter === 'month' && selectedMonthTab === 'Semasa') {
         const currentMonthStr = new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' });
-        displayedData = displayedData.filter(item => item.date && item.date.endsWith(currentMonthStr));
+        displayedData = historyData.filter(item => item.date && item.date.endsWith(currentMonthStr));
       }
 
       if (displayedData.length === 0) {
-        container.innerHTML = `<p class="text-gray-400 italic text-[11px] font-medium pl-1">Tiada sebarang rekod transaksi bagi ${selectedMonthTab}.</p>`;
+        container.innerHTML = `<p class="text-gray-400 italic text-[11px] font-medium pl-1">Tiada sebarang rekod transaksi untuk bulan ini.</p>`;
         return;
       }
 
@@ -813,7 +804,9 @@
       }
     }
 
-    window.onload = loadDataFromSheets;
+    window.onload = function() {
+      loadDataFromSheets();
+    };
   </script>
 </body>
 </html>
