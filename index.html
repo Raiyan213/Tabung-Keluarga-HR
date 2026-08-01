@@ -193,12 +193,13 @@
       </section>
 
       <section class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider">
-        <button class="text-gray-400 uppercase shrink-0">Jul</button>
-        <button class="text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2">Semasa</button>
-        <button class="text-gray-400 uppercase shrink-0">Sep</button>
-        <button class="text-gray-400 uppercase shrink-0">Oct</button>
-        <button class="text-gray-400 uppercase shrink-0">Nov</button>
-        <button class="text-gray-400 uppercase shrink-0">Dec</button>
+        <button id="month-btn-jul" onclick="selectMonthTab('Jul')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Jul</button>
+        <button id="month-btn-semasa" onclick="selectMonthTab('Semasa')" class="month-tab text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 cursor-pointer">Semasa</button>
+        <button id="month-btn-aug" onclick="selectMonthTab('Aug')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Aug</button>
+        <button id="month-btn-sep" onclick="selectMonthTab('Sep')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Sep</button>
+        <button id="month-btn-oct" onclick="selectMonthTab('Oct')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Oct</button>
+        <button id="month-btn-nov" onclick="selectMonthTab('Nov')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Nov</button>
+        <button id="month-btn-dec" onclick="selectMonthTab('Dec')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Dec</button>
       </section>
 
       <section class="space-y-3">
@@ -255,6 +256,7 @@
     let billStatus = { karan: false, wifi: false };
     let currentFilter = 'all';
     let labelNamaBulan = "";
+    let selectedMonthTab = 'Semasa';
 
     function checkUrlValid() {
       if (!WEB_APP_URL || WEB_APP_URL.includes("MASUKKAN_URL_DEPLOY_BISKITA_DISINI")) {
@@ -308,6 +310,23 @@
       showLoading(false);
     }
 
+    function selectMonthTab(monthName) {
+      selectedMonthTab = monthName;
+      
+      // Kemaskini Gaya Visual Tab (Active Styling)
+      const tabs = document.querySelectorAll('.month-tab');
+      tabs.forEach(tab => {
+        tab.className = "month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer";
+      });
+
+      const activeBtn = document.getElementById('month-btn-' + monthName.toLowerCase());
+      if (activeBtn) {
+        activeBtn.className = "month-tab text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 cursor-pointer font-bold";
+      }
+
+      renderHistory();
+    }
+
     function renderBillButtons() {
       const btnKaran = document.getElementById('btn-pay-karan');
       const btnWifi = document.getElementById('btn-pay-wifi');
@@ -351,7 +370,6 @@
       }
     }
 
-    // UPDATE LABEL NAMA FAIL RESIT BIL
     function updateBillFileLabel(input, type) {
       const file = input.files[0];
       const label = document.getElementById('label-file-' + type);
@@ -364,7 +382,6 @@
       }
     }
 
-    // FUNGSI BAYAR BIL DENGAN CUSTOM AMOUNT & RESIT
     async function payBill(billName, type) {
       if (!checkUrlValid()) return;
       
@@ -526,14 +543,24 @@
     function renderHistory() {
       const container = document.getElementById('expense-history-list');
       let displayedData = historyData;
-      
-      if (currentFilter === 'month') {
+
+      // 1. Penapis mengikut tab bulan (Jul, Semasa, Sep, Oct, Nov, Dec)
+      if (selectedMonthTab !== 'Semasa') {
+        const query = selectedMonthTab.toLowerCase();
+        displayedData = historyData.filter(item => {
+          const itemText = ((item.item || "") + " " + (item.date || "")).toLowerCase();
+          return itemText.includes(query);
+        });
+      }
+
+      // 2. Penapis sub-button (Bulan Ini)
+      if (currentFilter === 'month' && selectedMonthTab === 'Semasa') {
         const currentMonthStr = new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' });
-        displayedData = historyData.filter(item => item.date && item.date.endsWith(currentMonthStr));
+        displayedData = displayedData.filter(item => item.date && item.date.endsWith(currentMonthStr));
       }
 
       if (displayedData.length === 0) {
-        container.innerHTML = `<p class="text-gray-400 italic text-[11px] font-medium pl-1">Tiada sebarang rekod transaksi.</p>`;
+        container.innerHTML = `<p class="text-gray-400 italic text-[11px] font-medium pl-1">Tiada sebarang rekod transaksi bagi ${selectedMonthTab}.</p>`;
         return;
       }
 
