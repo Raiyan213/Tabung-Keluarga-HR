@@ -192,15 +192,14 @@
         </div>
       </section>
 
-      <section class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider">
-        <button id="month-btn-jul" onclick="selectMonthTab('Jul')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Jul</button>
-        <button id="month-btn-semasa" onclick="selectMonthTab('Semasa')" class="month-tab text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 cursor-pointer font-bold">Semasa</button>
-        <button id="month-btn-aug" onclick="selectMonthTab('Aug')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Aug</button>
-        <button id="month-btn-sep" onclick="selectMonthTab('Sep')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Sep</button>
-        <button id="month-btn-oct" onclick="selectMonthTab('Oct')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Oct</button>
-        <button id="month-btn-nov" onclick="selectMonthTab('Nov')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Nov</button>
-        <button id="month-btn-dec" onclick="selectMonthTab('Dec')" class="month-tab text-gray-400 uppercase shrink-0 pb-2 cursor-pointer">Dec</button>
-      </section>
+<section id="month-selector-container" class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider"> 
+  <button onclick="selectMonthTab('Jul', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700">Jul</button> 
+  <button onclick="selectMonthTab('Aug', this)" class="text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors">Aug</button> 
+  <button onclick="selectMonthTab('Sep', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700">Sep</button> 
+  <button onclick="selectMonthTab('Oct', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700">Oct</button> 
+  <button onclick="selectMonthTab('Nov', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700">Nov</button> 
+  <button onclick="selectMonthTab('Dec', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700">Dec</button> 
+</section>
 
       <section class="space-y-3">
         <h2 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">Senarai Sumbangan Ahli</h2>
