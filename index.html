@@ -311,16 +311,26 @@
           labelNamaBulan = jsonResult.namaBulanSemasa || "";
 
           document.getElementById('label-bulan').innerText = labelNamaBulan;
-
-          // 🚀 TAMBAHKAN BARIS ANI DI SINI SUPAYA OTOMATIK HIGHLIGHT BULAN SEMASA MASA AWAL LOAD:
           autoHighlightCurrentMonth(labelNamaBulan);
 
           const totalBulanIni = jsonResult.totalBulanIni || 0;
+          let activeTarget = maxTotal;
+          localData.forEach(m => {
+            if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
+              activeTarget -= m.amount;
+            }
+          });
+          
           document.getElementById('current-total').innerText = totalBulanIni;
-          document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
-
-          let percentage = (totalBulanIni / maxTotal) * 100;
+          const totalDisplayContainer = document.getElementById('current-total').nextElementSibling;
+          if (totalDisplayContainer) {
+             totalDisplayContainer.innerText = " / " + activeTarget;
+          }
+          
+          let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
           document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
+          
+          document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
 
           renderMembers();
           renderHistory();
@@ -336,9 +346,9 @@
     function selectMonthTab(monthName, element) {
       const buttons = document.querySelectorAll('#month-selector-container button');
       buttons.forEach(btn => {
-        btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700";
+        btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer";
       });
-      element.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold";
+      element.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold cursor-pointer";
 
       showLoading(true, "Memuatkan Data", "Sedang membuka data bulan " + monthName + "...");
 
@@ -364,13 +374,25 @@
           labelNamaBulan = jsonResult.namaBulanSemasa || monthName;
 
           document.getElementById('label-bulan').innerText = labelNamaBulan;
-          autoHighlightCurrentMonth(labelNamaBulan);
+          
           const totalBulanIni = jsonResult.totalBulanIni || 0;
+          let activeTarget = maxTotal;
+          localData.forEach(m => {
+            if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
+              activeTarget -= m.amount;
+            }
+          });
+          
           document.getElementById('current-total').innerText = totalBulanIni;
-          document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
-
-          let percentage = (totalBulanIni / maxTotal) * 100;
+          const totalDisplayContainer = document.getElementById('current-total').nextElementSibling;
+          if (totalDisplayContainer) {
+             totalDisplayContainer.innerText = " / " + activeTarget;
+          }
+          
+          let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
           document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
+          
+          document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
 
           renderMembers();
           renderHistory();
@@ -383,36 +405,10 @@
         });
     }
 
-function renderMembers() {
+    function renderMembers() {
       const container = document.getElementById('members-list-container');
       container.innerHTML = "";
 
-      let activeMaxTotal = maxTotal; // Mula dengan BND 330
-      let totalBulanIni = 0;         // Kira duit PAID
-
-      // LOOP PERTAMA: Kira Target Semasa (Tolak yang Paused)
-      localData.forEach((m) => {
-        if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
-          activeMaxTotal -= m.amount; // Kurangkan target bulanan
-        } else if (m.status === 'PAID') {
-          totalBulanIni += m.amount;  // Tambah duit yang dah dibayar
-        }
-      });
-
-      // Kemaskini Paparan Dashboard (Atas)
-      document.getElementById('current-total').innerText = totalBulanIni;
-      // Kemaskini label maksimum dari "/ 330" kepada target aktif semasa (contoh: "/ 230")
-      const totalDisplayContainer = document.getElementById('current-total').nextElementSibling;
-      if (totalDisplayContainer) {
-          totalDisplayContainer.innerText = " / " + activeMaxTotal;
-      }
-
-      // Kemaskini Progress Bar
-      let percentage = activeMaxTotal > 0 ? (totalBulanIni / activeMaxTotal) * 100 : 0;
-      document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
-
-
-      // LOOP KEDUA: Bina Kad Ahli Keluarga (UI)
       localData.forEach((m) => {
         const lowerName = m.name.toLowerCase();
         const avatarUrl = avatarMap[lowerName] || "https://api.iconify.design/solar:user-bold.svg";
@@ -427,7 +423,7 @@ function renderMembers() {
           actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' && m.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
         } else if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">DIKECUALIKAN ⏸️</span>`;
-          actionButton = `<span class="text-[9px] text-gray-400 italic">Rehat bayar bulan ini</span>`;
+          actionButton = `<span class="text-[9px] text-gray-400 italic">Rehat bayar</span>`;
         } else {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500">PENDING ⏳</span>`;
           
@@ -832,7 +828,6 @@ function renderMembers() {
 
     // Fungsi pintar auto-highlight butang bulan semasa
 function autoHighlightCurrentMonth(monthName) {
-  // Jika monthName kosong dari backend, ambil dari jam/tarikh fon/PC pengguna
   if (!monthName) {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     monthName = months[new Date().getMonth()];
@@ -843,10 +838,8 @@ function autoHighlightCurrentMonth(monthName) {
     const btnText = btn.innerText.trim().toLowerCase();
     const currentMonthLower = monthName.toLowerCase();
 
-    // Reset semua butang ke warna kelabu (inactive)
     btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer";
 
-    // Padankan nama bulan dangan butang yang ngam
     if (currentMonthLower.includes(btnText) || 
        (currentMonthLower.includes('october') && btnText === 'oct') ||
        (currentMonthLower.includes('august') && btnText === 'aug') ||
@@ -855,7 +848,6 @@ function autoHighlightCurrentMonth(monthName) {
        (currentMonthLower.includes('november') && btnText === 'nov') ||
        (currentMonthLower.includes('december') && btnText === 'dec')) {
       
-      // Letak garisan hitam & font bold arah butang bulan semasa
       btn.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold cursor-pointer";
     }
   });
