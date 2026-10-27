@@ -311,6 +311,10 @@
           labelNamaBulan = jsonResult.namaBulanSemasa || "";
 
           document.getElementById('label-bulan').innerText = labelNamaBulan;
+
+          // 🚀 TAMBAHKAN BARIS ANI DI SINI SUPAYA OTOMATIK HIGHLIGHT BULAN SEMASA MASA AWAL LOAD:
+          autoHighlightCurrentMonth(labelNamaBulan);
+
           const totalBulanIni = jsonResult.totalBulanIni || 0;
           document.getElementById('current-total').innerText = totalBulanIni;
           document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
