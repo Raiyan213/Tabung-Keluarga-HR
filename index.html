@@ -394,7 +394,7 @@
         } else if (m.status === 'APPROVAL') {
           if (currentRole === 'admin') {
             statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
-            actionButton = `<button onclick="approvePayment('${m.name}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer">Sahkan ✅</button>`;
+            actionButton = `<button onclick="approvePayment('${member.name}')" class="btn-approve ${currentRole === 'admin' && member.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
           } else {
             statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
           }
