@@ -360,6 +360,7 @@
           labelNamaBulan = jsonResult.namaBulanSemasa || monthName;
 
           document.getElementById('label-bulan').innerText = labelNamaBulan;
+          autoHighlightCurrentMonth(labelNamaBulan);
           const totalBulanIni = jsonResult.totalBulanIni || 0;
           document.getElementById('current-total').innerText = totalBulanIni;
           document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
@@ -794,6 +795,37 @@
     }
 
     window.onload = loadDataFromSheets;
+
+    // Fungsi pintar auto-highlight butang bulan semasa
+function autoHighlightCurrentMonth(monthName) {
+  // Jika monthName kosong dari backend, ambil dari jam/tarikh fon/PC pengguna
+  if (!monthName) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    monthName = months[new Date().getMonth()];
+  }
+
+  const buttons = document.querySelectorAll('#month-selector-container button');
+  buttons.forEach(btn => {
+    const btnText = btn.innerText.trim().toLowerCase();
+    const currentMonthLower = monthName.toLowerCase();
+
+    // Reset semua butang ke warna kelabu (inactive)
+    btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer";
+
+    // Padankan nama bulan dangan butang yang ngam
+    if (currentMonthLower.includes(btnText) || 
+       (currentMonthLower.includes('october') && btnText === 'oct') ||
+       (currentMonthLower.includes('august') && btnText === 'aug') ||
+       (currentMonthLower.includes('july') && btnText === 'jul') ||
+       (currentMonthLower.includes('september') && btnText === 'sep') ||
+       (currentMonthLower.includes('november') && btnText === 'nov') ||
+       (currentMonthLower.includes('december') && btnText === 'dec')) {
+      
+      // Letak garisan hitam & font bold arah butang bulan semasa
+      btn.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold cursor-pointer";
+    }
+  });
+}
   </script>
 </body>
 </html>
