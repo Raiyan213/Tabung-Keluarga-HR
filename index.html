@@ -394,22 +394,25 @@
         let statusBadge = "";
         let actionButton = "";
 
-        if (m.status === 'PAID') {
+if (m.status === 'PAID') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-1">PAID ✅</span>`;
         } else if (m.status === 'APPROVAL') {
-          if (currentRole === 'admin') {
-            statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
-            actionButton = `<button onclick="approvePayment('${member.name}')" class="btn-approve ${currentRole === 'admin' && member.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
-          } else {
-            statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
-          }
+          statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
+          // Butang Sahkan sentiasa ada untuk Admin jika belum PAID
+          actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' && m.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
         } else {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500">PENDING ⏳</span>`;
+          
+          // Gabungkan butang Upload Resit DAN butang Sahkan (hanya Admin nampak) untuk status PENDING
           actionButton = `
-            <label class="bg-[#0F172A] hover:bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1">
-              <i class="fa-solid fa-paperclip text-[9px]"></i> Resit
-              <input type="file" accept="image/*" class="hidden" onchange="uploadReceiptToDrive(this, '${m.name}')">
-            </label>`;
+            <div class="flex items-center gap-2">
+              <label class="bg-[#0F172A] hover:bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1">
+                <i class="fa-solid fa-paperclip text-[9px]"></i> Resit
+                <input type="file" accept="image/*" class="hidden" onchange="uploadReceiptToDrive(this, '${m.name}')">
+              </label>
+              <button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>
+            </div>
+          `;
         }
 
         let receiptLink = "";
