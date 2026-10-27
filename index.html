@@ -61,7 +61,8 @@
         <span class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Kutipan <span id="label-bulan" class="text-gray-500 font-bold">...</span></span>
         <div class="text-right">
           <span class="text-3xl font-bold tracking-tight text-[#0F172A]">BND <span id="current-total">0</span></span>
-          <span class="text-xs text-gray-400 font-semibold"> / 330</span>
+          <!-- 🚀 DI SINI TARGET-TOTAL KITA LETAK ID SUPAYA MUDAH DI UPDATE -->
+          <span id="target-total" class="text-xs text-gray-400 font-semibold"> / 330</span>
         </div>
       </div>
       
@@ -322,10 +323,8 @@
           });
           
           document.getElementById('current-total').innerText = totalBulanIni;
-          const totalDisplayContainer = document.getElementById('current-total').nextElementSibling;
-          if (totalDisplayContainer) {
-             totalDisplayContainer.innerText = " / " + activeTarget;
-          }
+          // 🚀 FIX: Update text di span target-total yang betul
+          document.getElementById('target-total').innerText = " / " + activeTarget;
           
           let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
           document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
@@ -384,10 +383,8 @@
           });
           
           document.getElementById('current-total').innerText = totalBulanIni;
-          const totalDisplayContainer = document.getElementById('current-total').nextElementSibling;
-          if (totalDisplayContainer) {
-             totalDisplayContainer.innerText = " / " + activeTarget;
-          }
+          // 🚀 FIX: Update text di span target-total yang betul
+          document.getElementById('target-total').innerText = " / " + activeTarget;
           
           let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
           document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
@@ -408,6 +405,24 @@
     function renderMembers() {
       const container = document.getElementById('members-list-container');
       container.innerHTML = "";
+
+      let activeMaxTotal = maxTotal; 
+      let totalBulanIni = 0;         
+
+      localData.forEach((m) => {
+        if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
+          activeMaxTotal -= m.amount; 
+        } else if (m.status === 'PAID') {
+          totalBulanIni += m.amount;  
+        }
+      });
+
+      document.getElementById('current-total').innerText = totalBulanIni;
+      // 🚀 FIX: Update text di span target-total yang betul
+      document.getElementById('target-total').innerText = " / " + activeMaxTotal;
+
+      let percentage = activeMaxTotal > 0 ? (totalBulanIni / activeMaxTotal) * 100 : 0;
+      document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
 
       localData.forEach((m) => {
         const lowerName = m.name.toLowerCase();
