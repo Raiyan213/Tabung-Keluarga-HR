@@ -387,6 +387,32 @@ function renderMembers() {
       const container = document.getElementById('members-list-container');
       container.innerHTML = "";
 
+      let activeMaxTotal = maxTotal; // Mula dengan BND 330
+      let totalBulanIni = 0;         // Kira duit PAID
+
+      // LOOP PERTAMA: Kira Target Semasa (Tolak yang Paused)
+      localData.forEach((m) => {
+        if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
+          activeMaxTotal -= m.amount; // Kurangkan target bulanan
+        } else if (m.status === 'PAID') {
+          totalBulanIni += m.amount;  // Tambah duit yang dah dibayar
+        }
+      });
+
+      // Kemaskini Paparan Dashboard (Atas)
+      document.getElementById('current-total').innerText = totalBulanIni;
+      // Kemaskini label maksimum dari "/ 330" kepada target aktif semasa (contoh: "/ 230")
+      const totalDisplayContainer = document.getElementById('current-total').nextElementSibling;
+      if (totalDisplayContainer) {
+          totalDisplayContainer.innerText = " / " + activeMaxTotal;
+      }
+
+      // Kemaskini Progress Bar
+      let percentage = activeMaxTotal > 0 ? (totalBulanIni / activeMaxTotal) * 100 : 0;
+      document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
+
+
+      // LOOP KEDUA: Bina Kad Ahli Keluarga (UI)
       localData.forEach((m) => {
         const lowerName = m.name.toLowerCase();
         const avatarUrl = avatarMap[lowerName] || "https://api.iconify.design/solar:user-bold.svg";
@@ -400,7 +426,6 @@ function renderMembers() {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
           actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' && m.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
         } else if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
-          // 🚀 Jika status PAUSED
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">DIKECUALIKAN ⏸️</span>`;
           actionButton = `<span class="text-[9px] text-gray-400 italic">Rehat bayar bulan ini</span>`;
         } else {
@@ -423,7 +448,7 @@ function renderMembers() {
         }
 
         let whatsappBtn = "";
-        if (currentRole === 'admin' && m.status !== 'PAID') {
+        if (currentRole === 'admin' && m.status !== 'PAID' && m.status !== 'PAUSED' && m.status !== 'EXCUSED') {
           const waMsg = encodeURIComponent(`Hai ${m.name}, peringatan mesra untuk pembayaran tabung bulan ${labelNamaBulan} sebanyak BND ${m.amount}. Sila sertakan resit BIBD ya. Terima kasih!`);
           whatsappBtn = `<a href="https://wa.me/?text=${waMsg}" target="_blank" class="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-100 transition-colors" title="WhatsApp Reminder"><i class="fa-brands fa-whatsapp text-xs"></i></a>`;
         }
