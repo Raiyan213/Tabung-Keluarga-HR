@@ -383,7 +383,7 @@
         });
     }
 
-    function renderMembers() {
+function renderMembers() {
       const container = document.getElementById('members-list-container');
       container.innerHTML = "";
 
@@ -394,13 +394,13 @@
         let statusBadge = "";
         let actionButton = "";
 
-if (m.status === 'PAID') {
+        if (m.status === 'PAID') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-1">PAID ✅</span>`;
         } else if (m.status === 'APPROVAL') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
           actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' && m.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
         } else if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
-          // 🚀 BAHAGIAN BARU: Jika status PAUSED
+          // 🚀 Jika status PAUSED
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">DIKECUALIKAN ⏸️</span>`;
           actionButton = `<span class="text-[9px] text-gray-400 italic">Rehat bayar bulan ini</span>`;
         } else {
@@ -415,7 +415,7 @@ if (m.status === 'PAID') {
               <button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>
             </div>
           `;
-        }}
+        }
 
         let receiptLink = "";
         if (m.receiptUrl && m.receiptUrl.startsWith("http")) {
