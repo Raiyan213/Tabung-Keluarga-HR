@@ -576,107 +576,98 @@
       alert("Nombor akaun BIBD (" + accText + ") berjaya disalin!");
     }
 
-    function uploadReceiptToDrive(input, name) {
-      if (!checkUrlValid()) return;
-      const file = input.files[0];
-      if (!file) return;
+   // Kemas kini 1: Fungsi Upload Resit
+function uploadReceiptToDrive(input, name) {
+  if (!checkUrlValid()) return;
+  const file = input.files[0];
+  if (!file) return;
 
-      showLoading(true, "Menghantar Resit", "Sedang memproses fail...", true);
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 700; 
-          let width = img.width;
-          let height = img.height;
+  showLoading(true, "Menghantar Resit", "Sedang memproses fail...", true);
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.src = e.target.result;
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 700;
+      let width = img.width;
+      let height = img.height;
 
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-          const payload = {
-            action: "uploadReceipt",
-            name: name,
-            receipt: { mimeType: "image/jpeg", base64: compressedBase64 }
-          };
-
-          let percentComplete = 0;
-          const progressInterval = setInterval(() => {
-            if (percentComplete < 88) {
-              percentComplete += Math.floor(Math.random() * 10) + 5;
-              if (percentComplete > 88) percentComplete = 88;
-              document.getElementById('upload-progress-bar').style.width = percentComplete + '%';
-              document.getElementById('upload-percentage').innerText = percentComplete + '%';
-            }
-          }, 100);
-
-          fetch(WEB_APP_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=UTF-8" },
-            body: JSON.stringify(payload)
-          })
-          .then(res => res.json())
-          .then(result => {
-            clearInterval(progressInterval);
-            if (result.status === "SUCCESS") {
-              document.getElementById('upload-progress-bar').style.width = '100%';
-              document.getElementById('upload-percentage').innerText = '100%';
-              document.getElementById('loading-title').innerHTML = "<span style='color: #2ecc71;'>✓ Selesai Dihantar!</span>";
-              document.getElementById('loading-subtitle').innerText = "Data tabung sedang dikemas kini...";
-
-              setTimeout(() => {
-                showLoading(false);
-                loadDataFromSheets(); 
-              }, 1200);
-            } else {
-              alert("Gagal: " + result.message);
-              showLoading(false);
-            }
-          })
-          .catch(error => {
-            clearInterval(progressInterval);
-            document.getElementById('upload-progress-bar').style.width = '100%';
-            document.getElementById('upload-percentage').innerText = '100%';
-            document.getElementById('loading-title').innerHTML = "<span style='color: #2ecc71;'>✓ Selesai Dihantar!</span>";
-            document.getElementById('loading-subtitle').innerText = "Kemaskini data...";
-
-            setTimeout(() => {
-              showLoading(false);
-              loadDataFromSheets();
-            }, 1500);
-          });
-        };
-      };
-      reader.readAsDataURL(file);
-    }
-
-    async function approvePayment(name) {
-      if (!checkUrlValid()) return;
-      showLoading(true);
-      try {
-        const response = await fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=UTF-8" },
-          body: JSON.stringify({ action: "approvePayment", name: name })
-        });
-        const result = await response.json();
-        if (result.status === "SUCCESS") {
-          loadDataFromSheets();
-        }
-      } catch (error) {
-        setTimeout(() => loadDataFromSheets(), 1000);
+      if (width > MAX_WIDTH) {
+        height *= MAX_WIDTH / width;
+        width = MAX_WIDTH;
       }
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+      
+      // KEMAS KINI DI SINI: Tambah parameter month
+      const payload = {
+        action: "uploadReceipt",
+        name: name,
+        month: labelNamaBulan, 
+        receipt: { mimeType: "image/jpeg", base64: compressedBase64 }
+      };
+
+      let percentComplete = 0;
+      const progressInterval = setInterval(() => {
+        if (percentComplete < 88) {
+          percentComplete += Math.floor(Math.random() * 10) + 5;
+          if (percentComplete > 88) percentComplete = 88;
+          document.getElementById('upload-progress-bar').style.width = percentComplete + '%';
+          document.getElementById('upload-percentage').innerText = percentComplete + '%';
+        }
+      }, 100);
+
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(result => {
+        clearInterval(progressInterval);
+        if (result.status === "SUCCESS") {
+          document.getElementById('upload-progress-bar').style.width = '100%';
+          document.getElementById('upload-percentage').innerText = '100%';
+          document.getElementById('loading-title').innerHTML = "<span style='color: #2ecc71;'>✓ Selesai Dihantar!</span>";
+          document.getElementById('loading-subtitle').innerText = "Data tabung sedang dikemas kini...";
+
+          setTimeout(() => {
+            showLoading(false);
+            loadDataFromSheets();
+          }, 1500);
+        }
+      });
+    };
+  };
+  reader.readAsDataURL(file);
+}
+
+// Kemas kini 2: Fungsi Sahkan Bayaran
+async function approvePayment(name) {
+  if (!checkUrlValid()) return;
+  showLoading(true);
+  try {
+    const response = await fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      // KEMAS KINI DI SINI: Tambah parameter month
+      body: JSON.stringify({ action: "approvePayment", name: name, month: labelNamaBulan })
+    });
+    const result = await response.json();
+    if (result.status === "SUCCESS") {
+      loadDataFromSheets();
     }
+  } catch (error) {
+    setTimeout(() => loadDataFromSheets(), 1000);
+  }
+}
 
     async function submitExpense() {
       if (!checkUrlValid()) return;
