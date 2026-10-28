@@ -61,7 +61,6 @@
         <span class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Kutipan <span id="label-bulan" class="text-gray-500 font-bold">...</span></span>
         <div class="text-right">
           <span class="text-3xl font-bold tracking-tight text-[#0F172A]">BND <span id="current-total">0</span></span>
-          <!-- 🚀 DI SINI TARGET-TOTAL KITA LETAK ID SUPAYA MUDAH DI UPDATE -->
           <span id="target-total" class="text-xs text-gray-400 font-semibold"> / 330</span>
         </div>
       </div>
@@ -190,14 +189,14 @@
     </section>
 
     <!-- PEMILIH BULAN -->
-<section id="month-selector-container" class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider">
-  <button onclick="selectMonthTab('Jul', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Jul</button>
-  <button onclick="selectMonthTab('Aug', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Aug</button>
-  <button onclick="selectMonthTab('Sep', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Sep</button>
-  <button onclick="selectMonthTab('Oct', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Oct</button>
-  <button onclick="selectMonthTab('Nov', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Nov</button>
-  <button onclick="selectMonthTab('Dec', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Dec</button>
-</section>
+    <section id="month-selector-container" class="overflow-x-auto flex gap-6 pb-2 border-b border-gray-100 scrollbar-none text-xs font-semibold tracking-wider">
+      <button onclick="selectMonthTab('Jul', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Jul</button>
+      <button onclick="selectMonthTab('Aug', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Aug</button>
+      <button onclick="selectMonthTab('Sep', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Sep</button>
+      <button onclick="selectMonthTab('Oct', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Oct</button>
+      <button onclick="selectMonthTab('Nov', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Nov</button>
+      <button onclick="selectMonthTab('Dec', this)" class="text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer">Dec</button>
+    </section>
 
     <!-- SENARAI SUMBANGAN AHLI -->
     <section class="space-y-3">
@@ -224,9 +223,6 @@
   </footer>
 
   <script>
-    // ==========================================
-    // ⚠️ MASUKKAN URL WEB APP GOOGLE APPS SCRIPT BISKITA DI SINI
-    // ==========================================
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfPoame8vZtkRMU-_0TCMQb6w_HX5_LnXs0Nx2o2pSI_IexL7YUMz8zsh-kiWIeTDD/exec"; 
     const ADMIN_PASSWORD = "1234";
 
@@ -323,8 +319,8 @@
           });
           
           document.getElementById('current-total').innerText = totalBulanIni;
-          // 🚀 FIX: Update text di span target-total yang betul
-          document.getElementById('target-total').innerText = " / " + activeTarget;
+          const targetElem = document.getElementById('target-total');
+          if (targetElem) targetElem.innerText = " / " + activeTarget;
           
           let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
           document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
@@ -383,8 +379,8 @@
           });
           
           document.getElementById('current-total').innerText = totalBulanIni;
-          // 🚀 FIX: Update text di span target-total yang betul
-          document.getElementById('target-total').innerText = " / " + activeTarget;
+          const targetElem = document.getElementById('target-total');
+          if (targetElem) targetElem.innerText = " / " + activeTarget;
           
           let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
           document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
@@ -406,24 +402,6 @@
       const container = document.getElementById('members-list-container');
       container.innerHTML = "";
 
-      let activeMaxTotal = maxTotal; 
-      let totalBulanIni = 0;         
-
-      localData.forEach((m) => {
-        if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
-          activeMaxTotal -= m.amount; 
-        } else if (m.status === 'PAID') {
-          totalBulanIni += m.amount;  
-        }
-      });
-
-      document.getElementById('current-total').innerText = totalBulanIni;
-      // 🚀 FIX: Update text di span target-total yang betul
-      document.getElementById('target-total').innerText = " / " + activeMaxTotal;
-
-      let percentage = activeMaxTotal > 0 ? (totalBulanIni / activeMaxTotal) * 100 : 0;
-      document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
-
       localData.forEach((m) => {
         const lowerName = m.name.toLowerCase();
         const avatarUrl = avatarMap[lowerName] || "https://api.iconify.design/solar:user-bold.svg";
@@ -435,7 +413,7 @@
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-1">PAID ✅</span>`;
         } else if (m.status === 'APPROVAL') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
-          actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' && m.status !== 'PAID' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
+          actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
         } else if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">DIKECUALIKAN ⏸️</span>`;
           actionButton = `<span class="text-[9px] text-gray-400 italic">Rehat bayar</span>`;
@@ -630,7 +608,8 @@
     function sendBillPayload(billName, amount, receiptObj) {
       const payload = {
         action: "recordBillPayment",
-        billType: billName + " (" + labelNamaBulan + ")",
+        item: billName,
+        billType: billName,
         amount: amount,
         month: labelNamaBulan,
         receipt: receiptObj
@@ -691,7 +670,7 @@
 
       const payload = {
         action: "recordExpense",
-        item: item + " (" + labelNamaBulan + ")",
+        item: item,
         amount: amount,
         month: labelNamaBulan
       };
@@ -841,32 +820,31 @@
 
     window.onload = loadDataFromSheets;
 
-    // Fungsi pintar auto-highlight butang bulan semasa
-function autoHighlightCurrentMonth(monthName) {
-  if (!monthName) {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    monthName = months[new Date().getMonth()];
-  }
+    function autoHighlightCurrentMonth(monthName) {
+      if (!monthName) {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        monthName = months[new Date().getMonth()];
+      }
 
-  const buttons = document.querySelectorAll('#month-selector-container button');
-  buttons.forEach(btn => {
-    const btnText = btn.innerText.trim().toLowerCase();
-    const currentMonthLower = monthName.toLowerCase();
+      const buttons = document.querySelectorAll('#month-selector-container button');
+      buttons.forEach(btn => {
+        const btnText = btn.innerText.trim().toLowerCase();
+        const currentMonthLower = monthName.toLowerCase();
 
-    btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer";
+        btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer";
 
-    if (currentMonthLower.includes(btnText) || 
-       (currentMonthLower.includes('october') && btnText === 'oct') ||
-       (currentMonthLower.includes('august') && btnText === 'aug') ||
-       (currentMonthLower.includes('july') && btnText === 'jul') ||
-       (currentMonthLower.includes('september') && btnText === 'sep') ||
-       (currentMonthLower.includes('november') && btnText === 'nov') ||
-       (currentMonthLower.includes('december') && btnText === 'dec')) {
-      
-      btn.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold cursor-pointer";
+        if (currentMonthLower.includes(btnText) || 
+           (currentMonthLower.includes('october') && btnText === 'oct') ||
+           (currentMonthLower.includes('august') && btnText === 'aug') ||
+           (currentMonthLower.includes('july') && btnText === 'jul') ||
+           (currentMonthLower.includes('september') && btnText === 'sep') ||
+           (currentMonthLower.includes('november') && btnText === 'nov') ||
+           (currentMonthLower.includes('december') && btnText === 'dec')) {
+          
+          btn.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold cursor-pointer";
+        }
+      });
     }
-  });
-}
   </script>
 </body>
 </html>
