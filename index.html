@@ -61,7 +61,7 @@
         <span class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Kutipan <span id="label-bulan" class="text-gray-500 font-bold">...</span></span>
         <div class="text-right">
           <span class="text-3xl font-bold tracking-tight text-[#0F172A]">BND <span id="current-total">0</span></span>
-          <span id="target-total" class="text-xs text-gray-400 font-semibold"> / 330</span>
+          <span id="current-max-display" class="text-xs text-gray-400 font-semibold"> / 330</span>
         </div>
       </div>
       
@@ -200,7 +200,10 @@
 
     <!-- SENARAI SUMBANGAN AHLI -->
     <section class="space-y-3">
-      <h2 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">Senarai Sumbangan Ahli</h2>
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Senarai Sumbangan Ahli</h2>
+        <span class="text-[9px] text-gray-400 font-medium">Boleh ubah amount bayaran</span>
+      </div>
       <div id="members-list-container" class="space-y-3"></div>
     </section>
 
@@ -223,6 +226,9 @@
   </footer>
 
   <script>
+    // ==========================================
+    // ⚠️ MASUKKAN URL WEB APP GOOGLE APPS SCRIPT BISKITA DI SINI
+    // ==========================================
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfPoame8vZtkRMU-_0TCMQb6w_HX5_LnXs0Nx2o2pSI_IexL7YUMz8zsh-kiWIeTDD/exec"; 
     const ADMIN_PASSWORD = "1234";
 
@@ -289,47 +295,8 @@
       fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(jsonResult => {
-          const rawMembers = jsonResult.members || [];
-          const uniqueMap = {};
-          rawMembers.forEach(m => {
-            const key = m.name.trim().toLowerCase();
-            if (!uniqueMap[key]) {
-              uniqueMap[key] = m;
-            } else {
-              if (m.status === 'PAID' || (m.status === 'APPROVAL' && uniqueMap[key].status !== 'PAID')) {
-                uniqueMap[key] = m;
-              }
-            }
-          });
-
-          localData = Object.values(uniqueMap);
-          historyData = jsonResult.rekodPerbelanjaan || [];
-          billStatus = jsonResult.statusBilBulanIni || { karan: false, wifi: false };
-          labelNamaBulan = jsonResult.namaBulanSemasa || "";
-
-          document.getElementById('label-bulan').innerText = labelNamaBulan;
+          updateDashboardFromResult(jsonResult);
           autoHighlightCurrentMonth(labelNamaBulan);
-
-          const totalBulanIni = jsonResult.totalBulanIni || 0;
-          let activeTarget = maxTotal;
-          localData.forEach(m => {
-            if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
-              activeTarget -= m.amount;
-            }
-          });
-          
-          document.getElementById('current-total').innerText = totalBulanIni;
-          const targetElem = document.getElementById('target-total');
-          if (targetElem) targetElem.innerText = " / " + activeTarget;
-          
-          let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
-          document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
-          
-          document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
-
-          renderMembers();
-          renderHistory();
-          renderBillButtons();
           showLoading(false);
         })
         .catch(error => {
@@ -350,46 +317,7 @@
       fetch(WEB_APP_URL + "?month=" + encodeURIComponent(monthName))
         .then(res => res.json())
         .then(jsonResult => {
-          const rawMembers = jsonResult.members || [];
-          const uniqueMap = {};
-          rawMembers.forEach(m => {
-            const key = m.name.trim().toLowerCase();
-            if (!uniqueMap[key]) {
-              uniqueMap[key] = m;
-            } else {
-              if (m.status === 'PAID' || (m.status === 'APPROVAL' && uniqueMap[key].status !== 'PAID')) {
-                uniqueMap[key] = m;
-              }
-            }
-          });
-
-          localData = Object.values(uniqueMap);
-          historyData = jsonResult.rekodPerbelanjaan || [];
-          billStatus = jsonResult.statusBilBulanIni || { karan: false, wifi: false };
-          labelNamaBulan = jsonResult.namaBulanSemasa || monthName;
-
-          document.getElementById('label-bulan').innerText = labelNamaBulan;
-          
-          const totalBulanIni = jsonResult.totalBulanIni || 0;
-          let activeTarget = maxTotal;
-          localData.forEach(m => {
-            if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
-              activeTarget -= m.amount;
-            }
-          });
-          
-          document.getElementById('current-total').innerText = totalBulanIni;
-          const targetElem = document.getElementById('target-total');
-          if (targetElem) targetElem.innerText = " / " + activeTarget;
-          
-          let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
-          document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
-          
-          document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
-
-          renderMembers();
-          renderHistory();
-          renderBillButtons();
+          updateDashboardFromResult(jsonResult, monthName);
           showLoading(false);
         })
         .catch(error => {
@@ -398,13 +326,73 @@
         });
     }
 
+    function updateDashboardFromResult(jsonResult, fallbackMonth = "") {
+      const rawMembers = jsonResult.members || [];
+      const uniqueMap = {};
+      rawMembers.forEach(m => {
+        const key = m.name.trim().toLowerCase();
+        if (!uniqueMap[key]) {
+          uniqueMap[key] = m;
+        } else {
+          if (m.status === 'PAID' || (m.status === 'APPROVAL' && uniqueMap[key].status !== 'PAID')) {
+            uniqueMap[key] = m;
+          }
+        }
+      });
+
+      localData = Object.values(uniqueMap);
+      historyData = jsonResult.rekodPerbelanjaan || [];
+      billStatus = jsonResult.statusBilBulanIni || { karan: false, wifi: false };
+      labelNamaBulan = jsonResult.namaBulanSemasa || fallbackMonth;
+
+      document.getElementById('label-bulan').innerText = labelNamaBulan;
+
+      const totalBulanIni = jsonResult.totalBulanIni || 0;
+      let activeTarget = maxTotal;
+      localData.forEach(m => {
+        if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
+          activeTarget -= m.amount;
+        }
+      });
+
+      document.getElementById('current-total').innerText = totalBulanIni;
+      document.getElementById('current-max-display').innerText = " / " + activeTarget;
+
+      let percentage = activeTarget > 0 ? (totalBulanIni / activeTarget) * 100 : 0;
+      document.getElementById('progress-bar').style.width = Math.min(percentage, 100) + '%';
+
+      document.getElementById('accumulated-savings').innerText = jsonResult.bakiSimpananSemasa || 0;
+
+      renderMembers();
+      renderHistory();
+      renderBillButtons();
+    }
+
     function renderMembers() {
       const container = document.getElementById('members-list-container');
       container.innerHTML = "";
 
-      localData.forEach((m) => {
+      localData.forEach((m, idx) => {
         const lowerName = m.name.toLowerCase();
         const avatarUrl = avatarMap[lowerName] || "https://api.iconify.design/solar:user-bold.svg";
+        const paidVal = (m.paidAmount !== undefined && m.paidAmount !== null) ? m.paidAmount : m.amount;
+        const diff = paidVal - m.amount;
+
+        let amountInfoHtml = `<p class="text-[10px] text-gray-400 font-medium">Komitmen: BND ${m.amount}</p>`;
+        if ((m.status === 'PAID' || m.status === 'APPROVAL') && diff !== 0) {
+          const diffTag = diff < 0
+            ? `<span class="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-semibold">Kurang BND ${Math.abs(diff)}</span>`
+            : `<span class="text-[9px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">Lebih +BND ${diff}</span>`;
+          amountInfoHtml = `
+            <p class="text-[10px] text-gray-400 font-medium">Komitmen: BND ${m.amount}</p>
+            <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <span class="text-[11px] font-bold text-[#0F172A]">Bayar: BND ${paidVal}</span>
+              ${diffTag}
+            </div>
+          `;
+        } else if (m.status === 'PAID' || m.status === 'APPROVAL') {
+          amountInfoHtml = `<p class="text-[10px] text-gray-500 font-semibold">Bayar: BND ${paidVal}</p>`;
+        }
 
         let statusBadge = "";
         let actionButton = "";
@@ -413,20 +401,33 @@
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-1">PAID ✅</span>`;
         } else if (m.status === 'APPROVAL') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">APPROVAL ⏳</span>`;
-          actionButton = `<button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>`;
+          if (currentRole === 'admin') {
+            actionButton = `
+              <div class="flex items-center gap-1.5">
+                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 w-20 focus-within:border-[#0F766E]" title="Semak / edit jumlah bayaran">
+                  <span class="text-[9px] font-bold text-gray-400 mr-1">BND</span>
+                  <input type="number" id="pay-input-${idx}" value="${paidVal}" step="0.01" min="0" class="w-full bg-transparent text-[11px] font-bold text-gray-800 outline-none text-right">
+                </div>
+                <button onclick="approvePayment('${m.name}', ${idx})" class="bg-[#0F172A] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors cursor-pointer">Sahkan</button>
+              </div>
+            `;
+          }
         } else if (m.status === 'PAUSED' || m.status === 'EXCUSED') {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 flex items-center gap-1">DIKECUALIKAN ⏸️</span>`;
           actionButton = `<span class="text-[9px] text-gray-400 italic">Rehat bayar</span>`;
         } else {
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500">PENDING ⏳</span>`;
-          
           actionButton = `
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+              <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 w-20 focus-within:border-[#0F766E]" title="Masukkan jumlah mampu bayar">
+                <span class="text-[9px] font-bold text-gray-400 mr-1">BND</span>
+                <input type="number" id="pay-input-${idx}" value="${m.amount}" step="0.01" min="0" class="w-full bg-transparent text-[11px] font-bold text-gray-800 outline-none text-right">
+              </div>
               <label class="bg-[#0F172A] hover:bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1">
                 <i class="fa-solid fa-paperclip text-[9px]"></i> Resit
-                <input type="file" accept="image/*" class="hidden" onchange="uploadReceiptToDrive(this, '${m.name}')">
+                <input type="file" accept="image/*" class="hidden" onchange="uploadReceiptToDrive(this, '${m.name}', ${idx})">
               </label>
-              <button onclick="approvePayment('${m.name}')" class="btn-approve ${currentRole === 'admin' ? 'block' : 'hidden'} bg-[#0F172A] text-white px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide hover:bg-slate-800 transition-colors font-display cursor-pointer">Sahkan</button>
+              <button onclick="approvePayment('${m.name}', ${idx})" class="${currentRole === 'admin' ? 'block' : 'hidden'} bg-[#0F766E] text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wide hover:bg-[#115E59] transition-colors cursor-pointer">Sahkan</button>
             </div>
           `;
         }
@@ -438,37 +439,48 @@
 
         let whatsappBtn = "";
         if (currentRole === 'admin' && m.status !== 'PAID' && m.status !== 'PAUSED' && m.status !== 'EXCUSED') {
-          const waMsg = encodeURIComponent(`Hai ${m.name}, peringatan mesra untuk pembayaran tabung bulan ${labelNamaBulan} sebanyak BND ${m.amount}. Sila sertakan resit BIBD ya. Terima kasih!`);
-          whatsappBtn = `<a href="https://wa.me/?text=${waMsg}" target="_blank" class="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-100 transition-colors" title="WhatsApp Reminder"><i class="fa-brands fa-whatsapp text-xs"></i></a>`;
+          const waMsg = encodeURIComponent(`Hai ${m.name}, peringatan mesra untuk pembayaran tabung bulan ${labelNamaBulan} (komitmen BND ${m.amount}). Sila masukkan jumlah bayaran dan sertakan resit BIBD ya. Terima kasih!`);
+          whatsappBtn = `<a href="https://wa.me/?text=${waMsg}" target="_blank" class="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-100 transition-colors shrink-0" title="WhatsApp Reminder"><i class="fa-brands fa-whatsapp text-xs"></i></a>`;
         }
 
         const card = document.createElement('div');
-        card.className = "bg-white rounded-2xl p-4 border border-gray-100 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.02)] flex items-center justify-between gap-3";
+        card.className = "bg-white rounded-2xl p-4 border border-gray-100 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.02)] space-y-3";
         card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${avatarUrl}" alt="${m.name}" class="w-11 h-11 rounded-full object-cover border border-gray-100 shadow-xs" onerror="this.src='https://api.iconify.design/solar:user-bold.svg'">
-            <div>
-              <h4 class="text-xs font-bold text-gray-800">${m.name}</h4>
-              <p class="text-[10px] text-gray-400 font-medium">BND ${m.amount}</p>
-              ${receiptLink}
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img src="${avatarUrl}" alt="${m.name}" class="w-11 h-11 rounded-full object-cover border border-gray-100 shadow-xs" onerror="this.src='https://api.iconify.design/solar:user-bold.svg'">
+              <div>
+                <h4 class="text-xs font-bold text-gray-800">${m.name}</h4>
+                ${amountInfoHtml}
+                ${receiptLink}
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${statusBadge}
+              ${whatsappBtn}
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            ${statusBadge}
-            ${actionButton}
-            ${whatsappBtn}
-          </div>
+          ${actionButton ? `<div class="pt-2.5 border-t border-gray-50 flex justify-end">${actionButton}</div>` : ''}
         `;
         container.appendChild(card);
       });
     }
 
-    function uploadReceiptToDrive(input, name) {
+    function uploadReceiptToDrive(input, name, idx) {
       if (!checkUrlValid()) return;
       const file = input.files[0];
       if (!file) return;
 
-      showLoading(true, "Menghantar Resit", "Sedang memproses fail...", true);
+      const amountInput = document.getElementById('pay-input-' + idx);
+      const customAmount = amountInput ? parseFloat(amountInput.value) : null;
+
+      if (amountInput && (isNaN(customAmount) || customAmount <= 0)) {
+        alert("Sila masukkan jumlah bayaran BND yang sah sebelum upload resit.");
+        input.value = "";
+        return;
+      }
+
+      showLoading(true, "Menghantar Resit", `Merekod BND ${customAmount} untuk ${name}...`, true);
       
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -496,6 +508,7 @@
             action: "uploadReceipt",
             name: name,
             month: labelNamaBulan,
+            amountPaid: customAmount,
             receipt: { mimeType: "image/jpeg", base64: compressedBase64 }
           };
 
@@ -543,14 +556,27 @@
       reader.readAsDataURL(file);
     }
 
-    async function approvePayment(name) {
+    async function approvePayment(name, idx) {
       if (!checkUrlValid()) return;
-      showLoading(true, "Mengemaskini Status", "Sedang mengesahkan pembayaran...");
+      const amountInput = document.getElementById('pay-input-' + idx);
+      const customAmount = amountInput ? parseFloat(amountInput.value) : null;
+
+      if (amountInput && (isNaN(customAmount) || customAmount <= 0)) {
+        alert("Sila masukkan jumlah bayaran BND yang sah.");
+        return;
+      }
+
+      showLoading(true, "Mengemaskini Status", `Mengesahkan bayaran BND ${customAmount || ''}...`);
       try {
         const response = await fetch(WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=UTF-8" },
-          body: JSON.stringify({ action: "approvePayment", name: name, month: labelNamaBulan })
+          body: JSON.stringify({
+            action: "approvePayment",
+            name: name,
+            month: labelNamaBulan,
+            amountPaid: customAmount
+          })
         });
         const result = await response.json();
         showLoading(false);
@@ -608,8 +634,7 @@
     function sendBillPayload(billName, amount, receiptObj) {
       const payload = {
         action: "recordBillPayment",
-        item: billName,
-        billType: billName,
+        billType: billName + " (" + labelNamaBulan + ")",
         amount: amount,
         month: labelNamaBulan,
         receipt: receiptObj
@@ -670,7 +695,7 @@
 
       const payload = {
         action: "recordExpense",
-        item: item,
+        item: item + " (" + labelNamaBulan + ")",
         amount: amount,
         month: labelNamaBulan
       };
@@ -760,7 +785,11 @@
       let displayedData = historyData;
 
       if (currentFilter === 'month') {
-        displayedData = historyData.filter(item => item.date && item.date.toLowerCase().includes(labelNamaBulan.toLowerCase()));
+        const shortMonth = labelNamaBulan.toLowerCase().substring(0, 3);
+        displayedData = historyData.filter(item =>
+          (item.item && item.item.toLowerCase().includes(shortMonth)) ||
+          (item.date && item.date.toLowerCase().includes(shortMonth))
+        );
       }
 
       if (displayedData.length === 0) {
@@ -833,14 +862,7 @@
 
         btn.className = "text-gray-400 uppercase shrink-0 transition-colors hover:text-gray-700 cursor-pointer";
 
-        if (currentMonthLower.includes(btnText) || 
-           (currentMonthLower.includes('october') && btnText === 'oct') ||
-           (currentMonthLower.includes('august') && btnText === 'aug') ||
-           (currentMonthLower.includes('july') && btnText === 'jul') ||
-           (currentMonthLower.includes('september') && btnText === 'sep') ||
-           (currentMonthLower.includes('november') && btnText === 'nov') ||
-           (currentMonthLower.includes('december') && btnText === 'dec')) {
-          
+        if (currentMonthLower.includes(btnText)) {
           btn.className = "text-[#0F172A] uppercase shrink-0 border-b-2 border-[#0F172A] pb-2 transition-colors font-bold cursor-pointer";
         }
       });
